@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: SAM Template for Deploying Django Application with Elastic Beanstalk and RDS
+
+Resources:
+  MyElasticBeanstalkApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: tom-lyrics-ai
+
+  MyElasticBeanstalkEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      EnvironmentName: tom-lyrics-ai-env
+      ApplicationName: !Ref MyElasticBeanstalkApplication
+      SolutionStackName: "64bit Amazon Linux 2 v3.3.6 running Python 3.12"  # Replace with your desired platform
+      OptionSettings:
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: DJANGO_SETTINGS_MODULE
+          Value: 'lyrics.settings'
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: RDS_DB_NAME
+          Value: lyricsai
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: RDS_USERNAME
+          Value: postgres
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: RDS_PASSWORD
+          Value: postgres
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: RDS_HOSTNAME
+          Value: !GetAtt MyRDSInstance.Endpoint.Address
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: RDS_PORT
+          Value: '5432'
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: OPENAI_API_KEY
+          Value: ''
+        - Namespace: 'aws:elasticbeanstalk:application:environment'
+          OptionName: MUSIXMATCH_API_KEY
+          Value: ''
+
+  MyRDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: mydb-instance
+      Engine: postgres
+      MasterUsername: postgres
+      MasterUserPassword: postgres
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: 20
+      PubliclyAccessible: false
+      MultiAZ: false
+      VPCSecurityGroups:
+        - !GetAtt MyElasticBeanstalkEnvironment.SecurityGroup
+
+# The database password is hardwired in the template. This is not a best practice.
+# Normally I would use AWS Secrets Manager to store the password and then reference it in the template.
+# {{resolve:secretsmanager:mydb-secret:SecretString:password}}
+# For the purposes of this example, I'm keeping it simple.

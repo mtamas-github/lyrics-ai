@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Songs List{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="container">
+            <h1>Song List</h1>
+
+            <!-- Form for adding a new song -->
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form.title.label_tag }}
+                    {{ form.title }}
+                </div>
+                <div class="form-group">
+                    {{ form.artist_name.label_tag }}
+                    {{ form.artist_name }}
+                </div>
+                <button type="submit" class="btn btn-primary">Add new song</button>
+            </form>
+
+            <!-- Display list of songs -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Songs</h3>
+                </div>
+                <div class="card-body">
+                    {% if songs %}
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Artist</th>
+                                    <th>Song Title</th>
+                                    <th>Lyrics</th>
+                                    <th>Summary</th>
+                                    <th>Countries</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for song in songs %}
+                                <tr>
+                                    <td>{{ song.artist.name }}</td>
+                                    <td>{{ song.title }}</td>
+                                    <td>
+                                        {% if song.error %}
+                                            <p class="text-danger">
+                                                Error: {{ song.error }}
+                                            </p>
+                                        {% endif %}
+                                        {% if song.lyrics %}
+                                            <p>{{ song.lyrics }}</p>
+                                        {% else %}
+                                            <p class="text-danger">
+                                                Song is not analyzed
+                                            </p>
+                                        {% endif %}
+                                    </td>
+                                <td>
+                                    {% if song.summary %}
+                                    <p>{{ song.summary }}</p>
+                                    {% endif %}
+                                </td>
+
+                                    <td>
+                                        {% if song.countries_list %}
+                                        <ul>
+                                            {% for country in song.countries_list %}
+                                                <li>{{ country }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                        {% endif %}
+                                        {% if not song.lyrics %}
+                                            <button class="btn btn-primary analyze-button" data-song-id="{{ song.id }}">Analyze Song</button>
+                                               <div class="spinner-border text-primary ml-2" role="status" style="display: none;">
+                                                    <span class="sr-only">Loading...</span>
+                                                </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            No songs available.
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#id_artist_name').autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "{% url 'artist-autocomplete' %}",
+                    data: {
+                        'term': request.term
+                    },
+                    success: function(data) {
+                        response(data);
+                    }
+                });
+            },
+            minLength: 3,
+        });
+        $('.analyze-button').on('click', function() {
+            const songId = $(this).data('song-id');
+            const $button = $(this);
+            var $spinner = $button.next('.spinner-border');  // Select the spinner next to the button
+
+            $spinner.show();
+
+            // Disable the button to prevent multiple clicks
+            $button.prop('disabled', true);
+
+            // Make the AJAX request
+            $.ajax({
+                url: '/analyze/' + songId + '/',
+                method: 'GET',  // Or 'POST' depending on your backend logic
+                success: function(response) {
+                    // Handle successful response (if needed)
+                    alert('Song analyzed successfully!');
+
+                    // Reload the page
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    // Handle error response
+                    alert('Error analyzing song: ' + error);
+                },
+                complete: function() {
+                    // Hide loading indicator and re-enable button
+                    $spinner.hide();
+                    $button.prop('disabled', false);
+                }
+            });
+        });
+
+    });
+
+</script>
+{% endblock %}

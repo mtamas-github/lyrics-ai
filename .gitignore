@@ -1,0 +1,73 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+bin/
+obj/
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+*.wheel
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+*.cover
+*.py,cover
+.cache
+nosetests.xml
+coverage.xml
+*.coveragerc
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea/*
+
+# Environments
+.env
+*.env
+
+# Django stuff
+*.log
+media/
+db.sqlite3
+*.pot
+*.pyc
+*.pyo
+
+# Migrations
+**/migrations/*
+!**/migrations/__init__.py
+
+# I exclude the staticfiles directory.
+# this directory been used to generate the static files for the adminlte3 template
+# After the files been generated it had been copied to the static directory
+staticfiles/
+
+
+
